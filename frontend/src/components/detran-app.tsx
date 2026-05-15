@@ -23,6 +23,7 @@ import {
   Search,
   ShieldCheck,
   Timer,
+  Trash2,
   Trophy,
   UserRound,
   Wrench,
@@ -1026,9 +1027,11 @@ function ResultView({
 function HistoryView({
   history,
   onViewDetails,
+  onClearHistory,
 }: {
   history: StoredExamResult[];
   onViewDetails: (result: StoredExamResult) => void;
+  onClearHistory: () => void;
 }) {
   const [nameFilter, setNameFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -1075,7 +1078,18 @@ function HistoryView({
           <p className="text-sm font-semibold uppercase text-sky-700">Histórico</p>
           <h1 className="mt-1 text-3xl font-bold text-slate-950">Provas realizadas</h1>
         </div>
-        <p className="text-sm text-slate-500">{filteredHistory.length} registro(s)</p>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <p className="text-sm text-slate-500">{filteredHistory.length} registro(s)</p>
+          <button
+            type="button"
+            onClick={onClearHistory}
+            disabled={history.length === 0}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+          >
+            <Trash2 aria-hidden="true" className="size-4" />
+            Apagar histórico
+          </button>
+        </div>
       </div>
 
       <div className="mt-5 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-[1fr_180px_160px_160px]">
@@ -1675,6 +1689,26 @@ export function DetranApp() {
     setView("result");
   }, []);
 
+  const clearHistory = useCallback(() => {
+    if (history.length === 0) {
+      showToast("O histórico já está vazio.");
+      return;
+    }
+
+    const shouldClear = window.confirm(
+      "Apagar todas as provas anteriores? Isso também zera os dados do dashboard."
+    );
+
+    if (!shouldClear) {
+      return;
+    }
+
+    setHistory([]);
+    setResult(null);
+    writeHistory([]);
+    showToast("Histórico e dashboard apagados.");
+  }, [history.length, showToast]);
+
   const restartFromResult = useCallback(() => {
     setView("home");
     void startExam();
@@ -1722,7 +1756,12 @@ export function DetranApp() {
         ) : null}
 
         {view === "history" ? (
-          <HistoryView key="history" history={history} onViewDetails={showResultDetails} />
+          <HistoryView
+            key="history"
+            history={history}
+            onViewDetails={showResultDetails}
+            onClearHistory={clearHistory}
+          />
         ) : null}
 
         {view === "dashboard" ? (
