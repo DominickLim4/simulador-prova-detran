@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum QuestionCategory {
+  LEGISLACAO
+  DIRECAO_DEFENSIVA
+  PRIMEIROS_SOCORROS
+  MEIO_AMBIENTE_CIDADANIA
+  MECANICA
+}
+
+model Question {
+  id               String           @id
+  enunciado        String           @db.Text
+  alternativas     Json
+  respostaCorreta  String           @map("resposta_correta") @db.Char(1)
+  categoria        QuestionCategory
+  assunto          String
+  explicacao       String           @db.Text
+  linkEstudo       String           @map("link_estudo")
+  imagemUrl        String?          @map("imagem_url")
+  answers          Answer[]
+
+  @@index([categoria])
+  @@index([assunto])
+}
+
+model Exam {
+  id                 String   @id @default(cuid())
+  nomeCandidato      String   @map("nome_candidato")
+  dataInicio         DateTime @map("data_inicio") @default(now())
+  dataFim            DateTime? @map("data_fim")
+  totalAcertos       Int?     @map("total_acertos")
+  aprovado           Boolean?
+  questoesIds        Json     @map("questoes_ids")
+  tempoGastoSegundos Int?     @map("tempo_gasto_segundos")
+  answers            Answer[]
+
+  @@index([nomeCandidato])
+  @@index([dataInicio])
+}
+
+model Answer {
+  id                 String   @id @default(cuid())
+  examId             String   @map("exam_id")
+  questionId         String   @map("question_id")
+  alternativaMarcada String?  @map("alternativa_marcada") @db.Char(1)
+  correta            Boolean
+  exam               Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  question           Question @relation(fields: [questionId], references: [id])
+
+  @@index([examId])
+  @@index([questionId])
+}

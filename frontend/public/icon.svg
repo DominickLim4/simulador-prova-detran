@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Simulado DETRAN">
+  <rect width="128" height="128" rx="24" fill="#0f172a"/>
+  <path d="M34 72h60l-7-24c-2-7-7-11-15-11H56c-8 0-13 4-15 11l-7 24Z" fill="#10b981"/>
+  <path d="M45 58h38l-3-10c-1-3-4-5-8-5H56c-4 0-7 2-8 5l-3 10Z" fill="#e0f2fe"/>
+  <circle cx="47" cy="78" r="9" fill="#f8fafc"/>
+  <circle cx="81" cy="78" r="9" fill="#f8fafc"/>
+  <path d="M38 91h52" stroke="#fbbf24" stroke-width="8" stroke-linecap="round"/>
+</svg>
