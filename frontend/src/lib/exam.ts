@@ -59,6 +59,52 @@ function toExamQuestion(question: Question): ExamQuestion {
   };
 }
 
+function getQuestionFamilyKey(question: Question): string {
+  return `${question.categoria}:${question.assunto.trim().toLowerCase()}`;
+}
+
+function countUniqueFamilies(pool: Question[]): number {
+  return new Set(pool.map(getQuestionFamilyKey)).size;
+}
+
+function pickDiverseQuestions(pool: Question[], amount: number): Question[] {
+  const shuffledPool = shuffle(pool);
+  const selected: Question[] = [];
+  const selectedIds = new Set<string>();
+  const selectedFamilies = new Set<string>();
+
+  for (const question of shuffledPool) {
+    const familyKey = getQuestionFamilyKey(question);
+
+    if (selectedFamilies.has(familyKey)) {
+      continue;
+    }
+
+    selected.push(question);
+    selectedIds.add(question.id);
+    selectedFamilies.add(familyKey);
+
+    if (selected.length === amount) {
+      return selected;
+    }
+  }
+
+  for (const question of shuffledPool) {
+    if (selectedIds.has(question.id)) {
+      continue;
+    }
+
+    selected.push(question);
+    selectedIds.add(question.id);
+
+    if (selected.length === amount) {
+      return selected;
+    }
+  }
+
+  return selected;
+}
+
 function pickCategoryQuestions(
   category: Category,
   amount: number,
@@ -66,9 +112,10 @@ function pickCategoryQuestions(
 ): Question[] {
   const pool = questions.filter((question) => question.categoria === category);
   const lessRecentPool = pool.filter((question) => !recentQuestionIds.has(question.id));
-  const source = lessRecentPool.length >= amount ? lessRecentPool : pool;
+  const source =
+    countUniqueFamilies(lessRecentPool) >= amount ? lessRecentPool : pool;
 
-  return shuffle(source).slice(0, amount);
+  return pickDiverseQuestions(source, amount);
 }
 
 export function generateExam(
